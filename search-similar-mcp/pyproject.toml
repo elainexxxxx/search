@@ -1,0 +1,27 @@
+[project]
+name = "search-similar-mcp"
+version = "0.1.0"
+description = "MCP server that provides search functionality for finding similar translation pairs using embeddings"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.14.0",
+    "numpy>=2.3.3",
+    "pgvector>=0.4.1",
+    "psycopg2>=2.9.10",
+    "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.5",
+    "sqlalchemy>=2.0.43",
+]
+
+[project.scripts]
+search-similar-mcp = "search_similar_tool:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
