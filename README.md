@@ -26,10 +26,10 @@ search_pairs/
 #### Pull and Run from Docker Hub
 ```bash
 # Pull the pre-built image (replace 'your-username' with actual Docker Hub username)
-docker pull ghcr.io/elainexxxxx/search-similar-tool:latest
+docker pull ghcr.io/elainexxxxx/search:0ca5724
 
 # Run the container
-docker run --name search-similar-tool -p 8060:8060 ghcr.io/elainexxxxx/search-similar-tool:latest
+docker run --name search-similar-tool -p 8000:8000 ghcr.io/elainexxxxx/search:0ca5724
 ```
 ## API Endpoints
 
@@ -43,14 +43,14 @@ Check if the server is running and healthy.
 ```python
 import requests
 
-response = requests.get("http://localhost:8060/health")
+response = requests.get("http://localhost:8000/health")
 print(response.json())
 # Output: {"status": "healthy", "service": "search_similar_tool"}
 ```
 
 #### Curl Example:
 ```bash
-curl -X GET "http://localhost:8060/health"
+curl -X GET "http://localhost:8000/health"
 ```
 
 ---
@@ -65,7 +65,7 @@ Get information about the API and available endpoints.
 ```python
 import requests
 
-response = requests.get("http://localhost:8060/")
+response = requests.get("http://localhost:8000/")
 result = response.json()
 print(f"Service: {result['service']}")
 print(f"Available endpoints: {list(result['endpoints'].keys())}")
@@ -73,7 +73,7 @@ print(f"Available endpoints: {list(result['endpoints'].keys())}")
 
 #### Curl Example:
 ```bash
-curl -X GET "http://localhost:8060/"
+curl -X GET "http://localhost:8000/"
 ```
 
 ---
@@ -103,7 +103,7 @@ payload = {
     "top_k": 3
 }
 
-response = requests.post("http://localhost:8060/get_top_k", json=payload)
+response = requests.post("http://localhost:8000/get_top_k", json=payload)
 result = response.json()
 print(f"Top K: {result['value']}")
 # Output: Top K: 3
@@ -111,7 +111,7 @@ print(f"Top K: {result['value']}")
 
 #### Curl Example:
 ```bash
-curl -X POST "http://localhost:8060/get_top_k" \
+curl -X POST "http://localhost:8000/get_top_k" \
   -H "Content-Type: application/json" \
   -d '{
     "user_input": "The Insurance Authority issues this Guideline",
@@ -138,7 +138,7 @@ payload = {
     "top_k": 3
 }
 
-response = requests.post("http://localhost:8060/get_user_input", json=payload)
+response = requests.post("http://localhost:8000/get_user_input", json=payload)
 result = response.json()
 print(f"User Input: {result['value']}")
 # Output: User Input: The Insurance Authority issues this Guideline
@@ -146,7 +146,7 @@ print(f"User Input: {result['value']}")
 
 #### Curl Example:
 ```bash
-curl -X POST "http://localhost:8060/get_user_input" \
+curl -X POST "http://localhost:8000/get_user_input" \
   -H "Content-Type: application/json" \
   -d '{
     "user_input": "The Insurance Authority issues this Guideline",
@@ -173,7 +173,7 @@ payload = {
     "top_k": 3
 }
 
-response = requests.post("http://localhost:8060/get_target_language", json=payload)
+response = requests.post("http://localhost:8000/get_target_language", json=payload)
 result = response.json()
 print(f"Target Language: {result['value']}")
 # Output: Target Language: chinese
@@ -181,7 +181,7 @@ print(f"Target Language: {result['value']}")
 
 #### Curl Example:
 ```bash
-curl -X POST "http://localhost:8060/get_target_language" \
+curl -X POST "http://localhost:8000/get_target_language" \
   -H "Content-Type: application/json" \
   -d '{
     "user_input": "The Insurance Authority issues this Guideline",
@@ -243,7 +243,7 @@ payload = {
     "top_k": 3
 }
 
-response = requests.post("http://localhost:8060/get_pairs", json=payload)
+response = requests.post("http://localhost:8000/get_pairs", json=payload)
 result = response.json()
 
 print(f"Found {result['total_found']} similar pairs")
@@ -264,7 +264,7 @@ chinese_payload = {
     "top_k": 2
 }
 
-response = requests.post("http://localhost:8060/get_pairs", json=chinese_payload)
+response = requests.post("http://localhost:8000/get_pairs", json=chinese_payload)
 result = response.json()
 print(f"\nChinese input - Found {result['total_found']} pairs")
 print(f"Detected language: {result['query_language']}")
@@ -273,7 +273,7 @@ print(f"Detected language: {result['query_language']}")
 #### Curl Example:
 ```bash
 # English input
-curl -X POST "http://localhost:8060/get_pairs" \
+curl -X POST "http://localhost:8000/get_pairs" \
   -H "Content-Type: application/json" \
   -d '{
     "user_input": "The Insurance Authority issues this Guideline pursuant to section 133 of the Insurance Ordinance",
@@ -282,7 +282,7 @@ curl -X POST "http://localhost:8060/get_pairs" \
   }'
 
 # Chinese input
-curl -X POST "http://localhost:8060/get_pairs" \
+curl -X POST "http://localhost:8000/get_pairs" \
   -H "Content-Type: application/json" \
   -d '{
     "user_input": "保險業監管局依據《保險業條例》第133條發出本指引",
@@ -332,262 +332,4 @@ curl -X POST "http://localhost:8060/get_pairs" \
 }
 ```
 
-## Testing
 
-Run the comprehensive test suite:
-
-```bash
-python test_search_similar_tool.py
-```
-
-The test suite includes:
-- Health check
-- All endpoint functionality tests
-- Language detection tests
-- Error handling tests
-
-## Docker Deployment
-
-### Building the Docker Image
-
-```bash
-# Build the image locally
-docker build -t search-similar-tool .
-
-# Or tag it for pushing to a registry
-docker build -t your-username/search-similar-tool:latest .
-```
-
-### Running with Docker
-
-#### Basic Run
-```bash
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  search-similar-tool
-```
-
-#### Run with Custom Database URL
-```bash
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  -e DATABASE_URL="postgresql://username:password@host:port/database" \
-  search-similar-tool
-```
-
-#### Run with Environment File
-```bash
-# Create a .env file with your configuration
-echo "DATABASE_URL=postgresql://username:password@host:port/database" > .env
-
-# Run with environment file
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  --env-file .env \
-  search-similar-tool
-```
-
-### Docker Compose Deployment
-
-#### Using the provided docker-compose.yml
-```bash
-# Start the service in the background
-docker-compose up -d
-
-# Start with custom environment variables
-DATABASE_URL="postgresql://username:password@host:port/database" docker-compose up -d
-
-# View logs
-docker-compose logs -f search-similar-tool
-
-# Stop the service
-docker-compose down
-
-# Restart the service
-docker-compose restart search-similar-tool
-```
-
-### Publishing to Docker Registry
-
-#### Docker Hub
-```bash
-# Login to Docker Hub
-docker login
-
-# Tag your image
-docker tag search-similar-tool your-username/search-similar-tool:latest
-
-# Push to Docker Hub
-docker push your-username/search-similar-tool:latest
-```
-
-#### Private Registry
-```bash
-# Tag for private registry
-docker tag search-similar-tool registry.example.com/search-similar-tool:latest
-
-# Push to private registry
-docker push registry.example.com/search-similar-tool:latest
-```
-
-### Pulling from Another Linux Server
-
-#### From Docker Hub
-```bash
-# Pull the latest image
-docker pull your-username/search-similar-tool:latest
-
-# Run the pulled image
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  -e DATABASE_URL="postgresql://admin:Abc123@10.96.184.114:5431/ai_platform" \
-  your-username/search-similar-tool:latest
-```
-
-#### From Private Registry
-```bash
-# Login to private registry if required
-docker login registry.example.com
-
-# Pull the image
-docker pull registry.example.com/search-similar-tool:latest
-
-# Run the image
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  -e DATABASE_URL="postgresql://admin:Abc123@10.96.184.114:5431/ai_platform" \
-  registry.example.com/search-similar-tool:latest
-```
-
-### Docker Container Management
-
-#### Container Operations
-```bash
-# Check container status
-docker ps
-
-# View container logs
-docker logs search-similar-tool
-
-# Follow logs in real-time
-docker logs -f search-similar-tool
-
-# Stop the container
-docker stop search-similar-tool
-
-# Start the container
-docker start search-similar-tool
-
-# Restart the container
-docker restart search-similar-tool
-
-# Remove the container
-docker rm search-similar-tool
-```
-
-#### Health Check
-```bash
-# Check container health
-docker inspect --format='{{.State.Health.Status}}' search-similar-tool
-
-# Manual health check
-curl http://localhost:8060/health
-```
-
-### Environment Variables
-
-The following environment variables can be configured:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `postgresql://admin:Abc123@10.96.184.114:5431/ai_platform` | PostgreSQL connection string |
-| `PYTHONDONTWRITEBYTECODE` | `1` | Prevent Python from writing .pyc files |
-| `PYTHONUNBUFFERED` | `1` | Force Python stdout/stderr to be unbuffered |
-
-### Troubleshooting
-
-#### Common Issues
-
-1. **Port already in use**
-   ```bash
-   # Use a different port
-   docker run -d --name search-similar-tool -p 8061:8060 search-similar-tool
-   ```
-
-2. **Database connection issues**
-   ```bash
-   # Check logs for connection errors
-   docker logs search-similar-tool
-   
-   # Verify database URL is correct
-   docker exec search-similar-tool env | grep DATABASE_URL
-   ```
-
-3. **Container won't start**
-   ```bash
-   # Check container logs
-   docker logs search-similar-tool
-   
-   # Run interactively to debug
-   docker run -it --rm search-similar-tool /bin/bash
-   ```
-
-#### Performance Tuning
-
-```bash
-# Run with memory limit
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  --memory="512m" \
-  --cpus="1.0" \
-  search-similar-tool
-
-# Run with restart policy
-docker run -d \
-  --name search-similar-tool \
-  -p 8060:8060 \
-  --restart=unless-stopped \
-  search-similar-tool
-```
-
-## Dependencies
-
-- FastAPI
-- uvicorn
-- requests
-- pydantic
-- sqlalchemy
-- pgvector
-- numpy
-- python-dotenv
-
-## Environment Setup
-
-Make sure to set up your database connection in the environment variables or `.env` file:
-
-```env
-DATABASE_URL=postgresql://username:password@host:port/database
-```
-
-## Error Handling
-
-All endpoints return appropriate HTTP status codes:
-- `200`: Success
-- `422`: Validation error (invalid parameters)
-- `500`: Server error
-
-Error responses include detailed error messages to help with debugging.
-
-## Interactive API Documentation
-
-Once the server is running, visit:
-- Swagger UI: `http://localhost:8060/docs`
-- ReDoc: `http://localhost:8060/redoc`
-
-These provide interactive documentation where you can test the API directly from your browser.
