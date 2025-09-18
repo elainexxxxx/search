@@ -1,213 +1,255 @@
-# Search Similar Tool Server
+# Search Similar Tool MCP Server
 
-This tool helps find the most relevant translation pairs from a database based on input text.
+This tool helps find the most relevant translation pairs from a database based on input text using the Model Context Protocol (MCP).
 
 ## Project Structure
 
 ```
 search_pairs/
-├── search_similar_tool.py      # Main FastAPI application
+├── search_similar_tool.py      # Main MCP server application
 ├── requirements.txt            # Python dependencies
 ├── Dockerfile                  # Docker image configuration
-├── docker-compose.yml          # Docker Compose setup
-├── .dockerignore              # Docker build exclusions
 ├── .env                       # Environment variables (create manually)
 └── README.md                  # This documentation
 ```
 
 ## Features
 
+- **MCP Protocol Support**: Fully compatible with Model Context Protocol
 - **Language Detection**: Automatically detects whether input text is Chinese or English
 - **Embedding Search**: Uses vector embeddings to find semantically similar translation pairs
-- **Multiple Endpoints**: Provides various endpoints for different use cases
-- **RESTful API**: Easy to integrate with any application via HTTP requests
+- **Multiple Tools**: Provides various tools for different search and analysis tasks
+- **Resources**: Access translation pairs through MCP resources
+- **Prompts**: Built-in prompts for search guidance and analysis
 
-## Quick Start
-#### Pull and Run from Docker Hub
+## Installation
+
+1. Install dependencies:
 ```bash
-# Pull the pre-built image (replace 'your-username' with actual Docker Hub username)
-docker pull ghcr.io/elainexxxxx/search:0ca5724
-
-# Run the container
-docker run --name search-similar-tool -p 8000:8000 ghcr.io/elainexxxxx/search:0ca5724
-```
-## API Endpoints
-
-### 1. Health Check
-
-**GET** `/health`
-
-Check if the server is running and healthy.
-
-#### Python Example:
-```python
-import requests
-
-response = requests.get("http://localhost:8000/health")
-print(response.json())
-# Output: {"status": "healthy", "service": "search_similar_tool"}
+pip install -r requirements.txt
 ```
 
-#### Curl Example:
+2. Set up environment variables in `.env`:
+```
+DATABASE_URL=postgresql://admin:Abc123@10.96.184.114:5431/ai_platform
+```
+
+## Running the MCP Server
+
+### Standard MCP Usage
+
+Run the server using the MCP protocol:
+
 ```bash
-curl -X GET "http://localhost:8000/health"
+# Using uv (recommended)
+uv run server search_similar_tool stdio
+
+# Or using python directly
+python search_similar_tool.py
 ```
 
----
+### Test Mode
 
-### 2. Root Information
+Test the server functionality:
 
-**GET** `/`
-
-Get information about the API and available endpoints.
-
-#### Python Example:
-```python
-import requests
-
-response = requests.get("http://localhost:8000/")
-result = response.json()
-print(f"Service: {result['service']}")
-print(f"Available endpoints: {list(result['endpoints'].keys())}")
-```
-
-#### Curl Example:
 ```bash
-curl -X GET "http://localhost:8000/"
+python search_similar_tool.py test
 ```
 
----
+## MCP Tools
 
-### 3. Get Top K Parameter
+The server provides the following tools that can be called by MCP clients:
 
-**POST** `/get_top_k`
+### 1. search_similar_pairs
 
-Returns the `top_k` parameter from the request.
+Find top-k closest translation pairs based on embedding similarity.
 
-#### Request Body:
+**Parameters:**
+- `user_input` (str): The text to search for similar translations
+- `target_language` (str): Target language ('chinese' or 'english')
+- `top_k` (int): Number of similar pairs to retrieve (1-20, default: 5)
+
+**Returns:**
+Dictionary containing pairs, total_found, query_language, and target_language
+
+**Example usage in MCP client:**
 ```json
 {
-  "user_input": "Your text here",
-  "target_language": "chinese",
-  "top_k": 5
+  "method": "tools/call",
+  "params": {
+    "name": "search_similar_pairs",
+    "arguments": {
+      "user_input": "The Insurance Authority issues this Guideline",
+      "target_language": "chinese",
+      "top_k": 3
+    }
+  }
 }
 ```
 
-#### Python Example:
-```python
-import requests
+### 2. get_top_k
 
-payload = {
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-}
+Returns the top_k parameter for search configuration.
 
-response = requests.post("http://localhost:8000/get_top_k", json=payload)
-result = response.json()
-print(f"Top K: {result['value']}")
-# Output: Top K: 3
+**Parameters:**
+- `user_input` (str): The input text
+- `target_language` (str): Target language
+- `top_k` (int): Number of results to return
+
+**Returns:** The top_k value
+
+### 3. get_user_input
+
+Returns the user_input parameter.
+
+**Parameters:**
+- `user_input` (str): The input text
+- `target_language` (str): Target language
+- `top_k` (int): Number of results to return
+
+**Returns:** The user input text
+
+### 4. get_target_language
+
+Returns the target_language parameter.
+
+**Parameters:**
+- `user_input` (str): The input text
+- `target_language` (str): Target language
+- `top_k` (int): Number of results to return
+
+**Returns:** The target language
+
+### 5. health_check
+
+Health check for the search service.
+
+**Parameters:** None
+
+**Returns:** Service status information
+
+### 6. get_service_info
+
+Get information about the search service and available tools.
+
+**Parameters:** None
+
+**Returns:** Service information and tool descriptions
+
+## MCP Resources
+
+The server provides the following resources:
+
+### 1. translation://{pair_id}
+
+Get a specific translation pair by ID.
+
+**Example:**
+```
+translation://123
 ```
 
-#### Curl Example:
-```bash
-curl -X POST "http://localhost:8000/get_top_k" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-  }'
+Returns formatted information about translation pair with ID 123.
+
+### 2. search://results/{query}
+
+Get formatted search results for a query.
+
+**Example:**
+```
+search://results/Insurance Authority
 ```
 
----
+Returns formatted search results for the query "Insurance Authority".
 
-### 4. Get User Input
+## MCP Prompts
 
-**POST** `/get_user_input`
+The server provides the following prompts:
 
-Returns the `user_input` parameter from the request.
+### 1. search_translation_prompt
 
-#### Python Example:
-```python
-import requests
+Generate a search prompt for finding similar translation pairs.
 
-payload = {
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-}
+**Parameters:**
+- `text` (str): Text to search for
+- `target_language` (str): Target language (default: "chinese")
+- `style` (str): Prompt style - "detailed", "simple", or "context" (default: "detailed")
 
-response = requests.post("http://localhost:8000/get_user_input", json=payload)
-result = response.json()
-print(f"User Input: {result['value']}")
-# Output: User Input: The Insurance Authority issues this Guideline
-```
+### 2. analyze_translation_quality
 
-#### Curl Example:
-```bash
-curl -X POST "http://localhost:8000/get_user_input" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-  }'
-```
+Generate a prompt to analyze translation quality between English and Chinese text.
 
----
+**Parameters:**
+- `english_text` (str): English text to analyze
+- `chinese_text` (str): Chinese text to analyze
 
-### 5. Get Target Language
+### 3. suggest_search_terms
 
-**POST** `/get_target_language`
+Generate suggestions for effective search terms in translation databases.
 
-Returns the `target_language` parameter from the request.
+**Parameters:**
+- `domain` (str): Domain context (default: "general")
+- `language` (str): Language for search terms (default: "english")
 
-#### Python Example:
-```python
-import requests
+## Usage Examples
 
-payload = {
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-}
+### Using with MCP-compatible clients
 
-response = requests.post("http://localhost:8000/get_target_language", json=payload)
-result = response.json()
-print(f"Target Language: {result['value']}")
-# Output: Target Language: chinese
-```
+1. **Claude Desktop with MCP:**
 
-#### Curl Example:
-```bash
-curl -X POST "http://localhost:8000/get_target_language" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_input": "The Insurance Authority issues this Guideline",
-    "target_language": "chinese",
-    "top_k": 3
-  }'
-```
+Add to your Claude Desktop configuration:
 
----
-
-### 6. Get Similar Translation Pairs (Main Function)
-
-**POST** `/get_pairs`
-
-Finds the top-k most similar translation pairs based on embedding similarity.
-
-#### Request Body:
 ```json
 {
-  "user_input": "Text to search for similar translations",
-  "target_language": "chinese" | "english",
-  "top_k": 5
+  "mcpServers": {
+    "search-similar-tool": {
+      "command": "uv",
+      "args": ["run", "server", "search_similar_tool", "stdio"],
+      "cwd": "/path/to/search_pairs/search"
+    }
+  }
 }
 ```
 
-#### Response:
+2. **Direct MCP client usage:**
+
+```python
+import asyncio
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+async def use_search_tool():
+    server_params = StdioServerParameters(
+        command="python",
+        args=["search_similar_tool.py"],
+        cwd="/path/to/search_pairs/search"
+    )
+    
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            # Initialize the session
+            await session.initialize()
+            
+            # Call the search tool
+            result = await session.call_tool(
+                "search_similar_pairs",
+                {
+                    "user_input": "insurance guidelines",
+                    "target_language": "chinese",
+                    "top_k": 3
+                }
+            )
+            
+            print(result)
+
+# Run the example
+asyncio.run(use_search_tool())
+```
+
+## Response Format
+
+### Search Results
+
 ```json
 {
   "pairs": [
@@ -231,105 +273,128 @@ Finds the top-k most similar translation pairs based on embedding similarity.
 }
 ```
 
-#### Python Example:
-```python
-import requests
-import json
+## Environment Configuration
 
-# English input example
-payload = {
-    "user_input": "The Insurance Authority issues this Guideline pursuant to section 133 of the Insurance Ordinance",
-    "target_language": "chinese",
-    "top_k": 3
-}
+Create a `.env` file with the following variables:
 
-response = requests.post("http://localhost:8000/get_pairs", json=payload)
-result = response.json()
-
-print(f"Found {result['total_found']} similar pairs")
-print(f"Query language detected: {result['query_language']}")
-print(f"Target language: {result['target_language']}")
-
-for i, pair in enumerate(result['pairs'], 1):
-    print(f"\nPair {i}:")
-    print(f"  ID: {pair['id']}")
-    print(f"  GL Number: {pair['gl_number']}")
-    print(f"  English: {pair['english_text'][:100]}...")
-    print(f"  Chinese: {pair['chinese_text'][:100]}...")
-
-# Chinese input example
-chinese_payload = {
-    "user_input": "保險業監管局依據《保險業條例》第133條發出本指引",
-    "target_language": "english",
-    "top_k": 2
-}
-
-response = requests.post("http://localhost:8000/get_pairs", json=chinese_payload)
-result = response.json()
-print(f"\nChinese input - Found {result['total_found']} pairs")
-print(f"Detected language: {result['query_language']}")
-```
-
-#### Curl Example:
 ```bash
-# English input
-curl -X POST "http://localhost:8000/get_pairs" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_input": "The Insurance Authority issues this Guideline pursuant to section 133 of the Insurance Ordinance",
-    "target_language": "chinese",
-    "top_k": 3
-  }'
+# Database connection
+DATABASE_URL=postgresql://username:password@host:port/database
 
-# Chinese input
-curl -X POST "http://localhost:8000/get_pairs" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_input": "保險業監管局依據《保險業條例》第133條發出本指引",
-    "target_language": "english",
-    "top_k": 2
-  }'
+# Optional: Embedding service configuration
+EMBEDDING_ENDPOINT=http://10.96.184.114:8007/v1/embeddings
+EMBEDDING_MODEL=hosted_vllm/Dmeta
 ```
 
-## Parameters
+## Database Schema
 
-### SearchRequest Parameters
+The tool expects a PostgreSQL database with the following table structure:
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `user_input` | string | Yes | - | The text to search for similar translations |
-| `target_language` | string | Yes | - | Target language: "chinese" or "english" |
-| `top_k` | integer | No | 5 | Number of similar pairs to retrieve (1-20) |
-
-## Response Models
-
-### BasicResponse
-```json
-{
-  "value": "any_value"
-}
+```sql
+CREATE TABLE trans_agent (
+    id SERIAL PRIMARY KEY,
+    gl_number VARCHAR,
+    row_number VARCHAR,
+    version VARCHAR,
+    effective_date VARCHAR,
+    english_text TEXT,
+    chinese_text TEXT,
+    english_embedding VECTOR(768),
+    chinese_embedding VECTOR(768),
+    created_at TIMESTAMP WITH TIME ZONE
+);
 ```
 
-### PairsResponse
-```json
-{
-  "pairs": [
-    {
-      "id": "integer",
-      "gl_number": "string",
-      "row_number": "string", 
-      "version": "string",
-      "effective_date": "string",
-      "english_text": "string",
-      "chinese_text": "string",
-      "context": "string",
-      "metadata": "object"
-    }
-  ],
-  "total_found": "integer",
-  "query_language": "string",
-  "target_language": "string"
-}
+## Error Handling
+
+The MCP server handles errors gracefully:
+
+- Invalid parameters return appropriate error messages
+- Database connection issues are caught and reported
+- Embedding service failures are handled with fallback responses
+
+## Development
+
+### Testing
+
+Run tests in development:
+
+```bash
+# Test basic functionality
+python search_similar_tool.py test
+
+# Test specific tools (requires MCP client setup)
+# See examples above for MCP client usage
 ```
+
+### Adding New Tools
+
+To add new MCP tools, use the `@mcp.tool()` decorator:
+
+```python
+@mcp.tool()
+def new_tool(param1: str, param2: int) -> str:
+    """Description of what the tool does"""
+    # Tool implementation
+    return result
+```
+
+### Adding New Resources
+
+To add new MCP resources, use the `@mcp.resource()` decorator:
+
+```python
+@mcp.resource("resource://pattern/{param}")
+def new_resource(param: str) -> str:
+    """Description of the resource"""
+    # Resource implementation
+    return content
+```
+
+### Adding New Prompts
+
+To add new MCP prompts, use the `@mcp.prompt()` decorator:
+
+```python
+@mcp.prompt()
+def new_prompt(param1: str, param2: str = "default") -> str:
+    """Description of the prompt"""
+    # Prompt generation logic
+    return prompt_text
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Errors:**
+   - Check your `DATABASE_URL` in the `.env` file
+   - Ensure the PostgreSQL server is running and accessible
+   - Verify the pgvector extension is installed
+
+2. **Embedding Service Errors:**
+   - Check if the embedding service is running at the configured endpoint
+   - Verify network connectivity to the embedding service
+
+3. **MCP Protocol Issues:**
+   - Ensure you're using a compatible MCP client
+   - Check that the server is running in stdio mode
+   - Verify the client is properly configured
+
+## License
+
+This project is licensed under the MIT License.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with MCP clients
+5. Submit a pull request
+
+---
+
+For more information about the Model Context Protocol, visit: https://github.com/modelcontextprotocol/specification
 
 
