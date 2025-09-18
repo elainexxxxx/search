@@ -1,6 +1,6 @@
 # Search Similar Tool Server
 
-A FastAPI server that provides search functionality for finding similar translation pairs using embedding similarity. This tool helps find the most relevant translation pairs from a database based on input text.
+This tool helps find the most relevant translation pairs from a database based on input text.
 
 ## Project Structure
 
