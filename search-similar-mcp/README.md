@@ -33,16 +33,12 @@ chmod +x upload.sh
 
 1. **Pull the image:**
    ```bash
-   docker pull ghcr.io/[owner]/[repo-name]:latest
+   docker pull ghcr.io/elainexxxxx/search:54d7b82
    ```
 
 2. **Run the container:**
    ```bash
-   docker run -d --name search-similar-mcp \
-     -e DATABASE_URL='postgresql://admin:Abc123@10.96.184.114:5431/ai_platform' \
-     -e EMBEDDING_ENDPOINT='http://10.96.184.114:8007/v1/embeddings' \
-     -e EMBEDDING_MODEL='hosted_vllm/Dmeta' \
-     ghcr.io/[owner]/[repo-name]:latest
+   docker run --name search-similar-mcp ghcr.io/elainexxxxx/search:54d7b82
    ```
 
 
