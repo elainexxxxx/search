@@ -314,7 +314,12 @@ The MCP server handles errors gracefully:
 - Embedding service failures are handled with fallback responses
 
 ## Development
+docker command
 
+```bash
+docker pull ghcr.io/elainexxxxx/search:f5db925
+docker run --name search_pairs -p 8000:8000 ghcr.io/elainexxxxx/search:f5db925
+```
 ### Testing
 
 Run tests in development:
