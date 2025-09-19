@@ -1,6 +1,6 @@
 # Search Similar MCP Server
 
-A Model Context Protocol (MCP) server that provides search functionality for finding similar translation pairs using embeddings. This server can be deployed as a Docker container and used with any MCP-compatible client.
+A Model Context Protocol (MCP) server that provides search functionality for finding similar translation pairs using embeddings. This server can be deployed as a Docker container and used with any MCP-compatible client
 
 ## Project Structure
 
