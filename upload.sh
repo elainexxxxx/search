@@ -45,7 +45,12 @@ fi
 IMAGE_NAME="ghcr.io/$GH_ORG/$GH_REPO:$COMMIT_HASH"
 
 # Build Docker image
+echo "Building Docker image: $IMAGE_NAME"
 docker build -t "$IMAGE_NAME" .
+
+# Also tag as latest
+LATEST_IMAGE="ghcr.io/$GH_ORG/$GH_REPO:latest"
+docker tag "$IMAGE_NAME" "$LATEST_IMAGE"
 
 
 # Docker login to GitHub Container Registry (ghcr.io)
@@ -61,6 +66,20 @@ if ! docker info 2>&1 | grep -q 'ghcr.io'; then
 fi
 
 # Push Docker image
+echo "Pushing Docker image: $IMAGE_NAME"
 docker push "$IMAGE_NAME"
 
-echo "Docker image pushed: $IMAGE_NAME"
+echo "Pushing latest tag: $LATEST_IMAGE"
+docker push "$LATEST_IMAGE"
+
+echo "Docker images pushed successfully!"
+echo "  - $IMAGE_NAME"
+echo "  - $LATEST_IMAGE"
+echo ""
+echo "To pull and run this image:"
+echo "  docker pull $IMAGE_NAME"
+echo "  docker run -d --name search-similar-mcp \\"
+echo "    -e DATABASE_URL='postgresql://admin:Abc123@10.96.184.114:5431/ai_platform' \\"
+echo "    -e EMBEDDING_ENDPOINT='http://10.96.184.114:8007/v1/embeddings' \\"
+echo "    -e EMBEDDING_MODEL='hosted_vllm/Dmeta' \\"
+echo "    $IMAGE_NAME"

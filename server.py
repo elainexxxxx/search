@@ -5,7 +5,7 @@ An MCP server that provides search functionality for finding similar translation
 This tool can be used with any MCP-compatible client.
 
 Run with:
-    uv run search_similar_tool.py
+    python server.py
 """
 
 import os
@@ -26,7 +26,7 @@ import truststore
 truststore.inject_into_ssl()
 
 # Load environment variables
-load_dotenv(override=True)
+load_dotenv()
 
 # Database setup
 Base = declarative_base()
@@ -45,7 +45,11 @@ class TransAgent(Base):
     english_embedding = Column(Vector(1024), nullable=True)  # Adjust dimensions as needed
     chinese_embedding = Column(Vector(1024), nullable=True)  # Adjust dimensions as needed
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:Abc123@10.96.184.114:5431/ai_platform")
+# Database connection from environment variables
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required")
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -66,9 +70,12 @@ class LocalVLLMEmbeddings:
     def embed_query(self, text: str) -> List[float]:
         return self.embed_documents([text])[0]
 
-# Initialize embeddings
-EMBEDDING_ENDPOINT = os.getenv("EMBEDDING_ENDPOINT", "http://10.96.184.114:8007/v1/embeddings")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "hosted_vllm/Dmeta")
+# Initialize embeddings from environment variables
+EMBEDDING_ENDPOINT = os.getenv("EMBEDDING_ENDPOINT")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
+
+if not EMBEDDING_ENDPOINT or not EMBEDDING_MODEL:
+    raise ValueError("EMBEDDING_ENDPOINT and EMBEDDING_MODEL environment variables are required")
 
 embeddings = LocalVLLMEmbeddings(
     endpoint=EMBEDDING_ENDPOINT,
@@ -110,7 +117,7 @@ async def make_database_request(query_embedding: List[float], top_k: int) -> Lis
                 "chinese_text": row.chinese_text,
                 "context": row.english_text,
                 "metadata": {
-                    "created_at": str(row.created_at) if row.created_at else None
+                    "created_at": str(getattr(row, 'created_at', None)) if hasattr(row, 'created_at') else None
                 }
             }
             pairs.append(pair)
@@ -205,7 +212,7 @@ async def get_translation_pair(pair_id: int) -> Dict[str, Any]:
                 "effective_date": pair.effective_date,
                 "english_text": pair.english_text,
                 "chinese_text": pair.chinese_text,
-                "created_at": str(pair.created_at) if pair.created_at else None
+                "created_at": str(getattr(pair, 'created_at', None)) if hasattr(pair, 'created_at') else None
             }
         finally:
             db.close()
@@ -264,7 +271,7 @@ def get_translation_resource(pair_id: str) -> str:
                 "english_text": pair.english_text,
                 "chinese_text": pair.chinese_text,
                 "metadata": {
-                    "created_at": str(pair.created_at) if pair.created_at else None
+                    "created_at": str(getattr(pair, 'created_at', None)) if hasattr(pair, 'created_at') else None
                 }
             })
         finally:

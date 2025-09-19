@@ -1,18 +1,14 @@
-# Use official Python runtime as base image
-FROM python:3.11-slim
+# Use Python 3.13 slim image for smaller size
+FROM python:3.13-slim
 
-# Set working directory in container
+# Set working directory
 WORKDIR /app
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
+    build-essential \
+    libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file
@@ -22,19 +18,24 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY search_similar_tool.py .
-COPY .env* ./
+COPY server.py .
+COPY env.example .
 
-# Create non-root user for security
-RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash app \
+    && chown -R app:app /app
 USER app
 
-# Expose port
+# Expose the default MCP port (though MCP typically uses stdio)
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8060/health')" || exit 1
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 
-# Run the application
-CMD ["python", "search_similar_tool.py"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from server import health_check; import sys; result = health_check(); sys.exit(0 if result['status'] == 'healthy' else 1)"
+
+# Default command - run the MCP server
+CMD ["python", "server.py"]

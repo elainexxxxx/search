@@ -1,15 +1,13 @@
-# MCP server dependencies
-mcp==1.0.0
+# Search Similar MCP Server Dependencies
+# Generated from pyproject.toml for Docker deployment
 
-# Database and core dependencies
-pydantic>=2.8.0
-sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
-pgvector==0.2.4
-numpy==1.24.3
-python-dotenv==1.0.0
-requests==2.31.0
-
-# Optional: Keep FastAPI for backwards compatibility if needed
-# fastapi==0.104.1
-# uvicorn[standard]==0.24.0
+httpx>=0.28.1
+mcp[cli]>=1.14.0
+numpy>=2.3.3
+pgvector>=0.4.1
+psycopg2>=2.9.10
+pydantic>=2.11.9
+python-dotenv>=1.1.1
+requests>=2.32.5
+sqlalchemy>=2.0.43
+truststore
