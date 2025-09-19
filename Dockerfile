@@ -31,6 +31,9 @@ EXPOSE 8000
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV DATABASE_URL='postgresql://admin:Abc123@10.96.184.114:5431/ai_platform'
+ENV EMBEDDING_ENDPOINT='http://10.96.184.114:8007/v1/embeddings'
+ENV EMBEDDING_MODEL='hosted_vllm/Dmeta'
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
