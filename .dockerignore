@@ -1,47 +1,62 @@
-# Ignore Python bytecode and cache
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyc
-*.pyo
-
-# Ignore Git directory
-.git/
+# Version control
+.git
 .gitignore
 
-# Ignore development files
-.env
-.env.local
-.env.*.local
-*.log
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.pytest_cache
+nosetests.xml
+.testmondata
 
-# Ignore IDE files
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Ignore OS files
+# OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Ignore test files and coverage
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
+# Project specific
+*.log
+*.pid
+*.seed
+*.csv
+*.dat
+*.out
+*.gz
 
-# Ignore documentation build
-docs/_build/
+# Documentation
+README.md
+*.md
 
-# Ignore upload script (not needed in container)
-upload.sh
-
-# Ignore lock files that might conflict
-pip-lock.txt
-Pipfile.lock
-
-# Ignore temporary files
-*.tmp
-*.temp
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore

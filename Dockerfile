@@ -1,15 +1,14 @@
-# Use Python 3.13 slim image for smaller size
-FROM python:3.13-slim
+# Use official Python runtime as base image
+FROM python:3.11-slim
 
-# Set working directory
+# Set working directory in container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Copy requirements file
 COPY requirements.txt .
@@ -18,26 +17,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY server.py .
+COPY search_similar_tool.py .
 
-# Create a non-root user for security
-RUN useradd --create-home --shell /bin/bash app \
-    && chown -R app:app /app
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 USER app
 
-# Expose the default MCP port (though MCP typically uses stdio)
+# Expose port
 EXPOSE 8000
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-ENV DATABASE_URL='postgresql://admin:Abc123@10.96.184.114:5431/ai_platform'
-ENV EMBEDDING_ENDPOINT='http://10.96.184.114:8007/v1/embeddings'
-ENV EMBEDDING_MODEL='hosted_vllm/Dmeta'
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from server import health_check; import sys; result = health_check(); sys.exit(0 if result['status'] == 'healthy' else 1)"
-
-# Default command - run the MCP server
-CMD ["python", "server.py"]
+# Run the application
+CMD ["python", "search_similar_tool.py"]
