@@ -34,7 +34,7 @@ mcp = FastMCP("search-similar-tool-server")
 Base = declarative_base()
 
 class TransAgent(Base):
-    __tablename__ = "trans_agent_all"
+    __tablename__ = "trans_agent_train"
     id = Column(Integer, primary_key=True, autoincrement=True)
     gl_number = Column(String)
     row_number = Column(String)
